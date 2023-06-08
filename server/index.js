@@ -4,6 +4,7 @@ const express = require('express');
 const multer  = require('multer');
 const cors = require('cors');
 const bodyParser = require('body-parser');
+const { Storage } = require('@google-cloud/storage');
 
 const app = express();
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -19,6 +20,12 @@ const firebaseConfig = {
 admin.initializeApp(firebaseConfig);
 const storage = admin.storage();
 const bucket=storage.bucket();
+
+//Setting up google cloud to retrive signed backlink to file for reference
+const googleStorage = new Storage({ 
+    credential: admin.credential.cert(serviceAccount),
+    projectId: 'audio-server-3b3ec'
+});
 
 // Setting up multer to store at destination and use original filename
 const multerStorage = multer.diskStorage({
@@ -45,8 +52,19 @@ function uploadFile(file) {
     })
       .then(() => {
         fs.unlinkSync(filePath);
-        resolve();
+        
+        const fileObj = bucket.file(destinationPath);
+        const config = {
+            action: 'read',
+            expires: '03-17-2025', // Set an expiration date
+        };
+        return fileObj.getSignedUrl(config);
       })
+      .then((results=>{
+        const url = results[0];
+        console.log('File uploaded and available at:', url);
+        resolve(url);
+      }))
       .catch(error => {
         console.error('Error uploading file:', error);
         reject(error);
