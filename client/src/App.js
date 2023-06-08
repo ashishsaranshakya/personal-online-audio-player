@@ -15,14 +15,17 @@ const App = () => {
     for(var i=0; i<selectedFile.length; i++){
       formData.append('file', selectedFile[i]);
     }
-    //formData.append('file', selectedFile);
+    
     setIsVisible(true);
     fetch( postBaseURL + '/upload', {
       method: 'POST',
       body: formData,
     })
       .then(response => {setIsVisible(false); return response.json(); })
-      .then(data => { console.log(data); })
+      .then(data => { 
+        setSelectedFile([]);
+        console.log(data);
+      })
       .catch(error => { console.error(error); });
   };
 
