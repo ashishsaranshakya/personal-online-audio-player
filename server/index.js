@@ -32,18 +32,12 @@ const upload = multer({ storage: multerStorage });
 
 const username = 'admin';
 
-app.post('/upload', upload.array('file'), (req, res) => {
-    console.log(req.files);
-    if (!req.files) {
-      res.status(400).json({ error: 'No file uploaded' });
-      return;
-    }
+function uploadFile(file) {
+    return new Promise((resolve, reject) => {
 
-    const file = req.file;
-    const filePath = `uploads/${file.filename}`;
-    const destinationPath = username + `/${file.originalname}`;
-  
-    bucket.upload(filePath, {
+      const filePath = `uploads/${file.filename}`;
+      const destinationPath = username + `/${file.originalname}`;
+      bucket.upload(filePath, {
       destination: destinationPath,
       metadata: {
         contentType: file.mimetype,
@@ -51,12 +45,37 @@ app.post('/upload', upload.array('file'), (req, res) => {
     })
       .then(() => {
         fs.unlinkSync(filePath);
-        res.json({ message: 'File uploaded successfully', filePath: destinationPath });
+        resolve();
       })
       .catch(error => {
         console.error('Error uploading file:', error);
-        res.status(500).json({ error: 'Error uploading file' });
+        reject(error);
       });
+
+    });
+  }
+
+async function uploadFiles(files, res) {
+    try {
+      await Promise.all(files.map(uploadFile));
+      console.log('All files uploaded successfully.');
+      res.json({ message: 'File uploaded successfully' });
+    } catch (error) {
+      console.error('Error uploading files:', error);
+      res.status(500).json({ error: 'Error uploading file' });
+    }
+  }
+
+app.post('/upload', upload.array('file'), (req, res) => {
+    console.log(req.files);
+    if (!req.files) {
+      res.status(400).json({ error: 'No file uploaded' });
+      return;
+    }
+    
+    //uploading all files asynchronously
+    const files=req.files;
+    uploadFiles(files, res);
   });
 
 app.listen(5000, () => {
