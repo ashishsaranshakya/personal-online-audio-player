@@ -6,23 +6,21 @@ const cors = require('cors');
 const bodyParser = require('body-parser');
 
 const app = express();
-// const upload = multer({ dest: 'uploads/' });
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors());
 app.use(express.json());
 
+// Setting up firebase storage 
 var serviceAccount = require("./serviceAccountKey.json");
 const firebaseConfig = { 
     credential: admin.credential.cert(serviceAccount),
     storageBucket: 'gs://audio-server-3b3ec.appspot.com'
 };
-
 admin.initializeApp(firebaseConfig);
 const storage = admin.storage();
 const bucket=storage.bucket();
 
-const username = 'admin';
-
+// Setting up multer to store at destination and use original filename
 const multerStorage = multer.diskStorage({
     destination: 'uploads/',
     filename: function (req, file, cb) {
@@ -30,11 +28,13 @@ const multerStorage = multer.diskStorage({
       cb(null, file.originalname);
     }
   });
-  
 const upload = multer({ storage: multerStorage });
 
-app.post('/upload', upload.single('file'), (req, res) => {
-    if (!req.file) {
+const username = 'admin';
+
+app.post('/upload', upload.array('file'), (req, res) => {
+    console.log(req.files);
+    if (!req.files) {
       res.status(400).json({ error: 'No file uploaded' });
       return;
     }
