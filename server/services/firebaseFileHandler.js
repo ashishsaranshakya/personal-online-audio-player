@@ -2,6 +2,7 @@ const admin = require('firebase-admin');
 const { Storage } = require('@google-cloud/storage');
 
 const fs = require('fs');
+const mongodbHandler = require('./mongodbHandler.js');
 
 // Setting up firebase storage 
 var serviceAccount = require("../serviceAccountKey.json");
@@ -57,6 +58,7 @@ function uploadFile(file) {
       .then((results=>{
         const url = results[0];
         console.log('File uploaded and available at:', url);
+        mongodbHandler.insertSongURL(username, file.filename, url);
         resolve(url);
       }))
       .catch(error => {
