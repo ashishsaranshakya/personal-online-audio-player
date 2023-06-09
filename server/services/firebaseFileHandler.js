@@ -27,7 +27,7 @@ async function uploadFiles(files, res, user) {
       username=user;
       await Promise.all(files.map(uploadFile));
       console.log('All files uploaded successfully.');
-      res.json({ message: 'File uploaded successfully' });
+      res.json({status: 'OK'});
     } catch (error) {
       console.error('Error uploading files:', error);
       res.status(500).json({ error: 'Error uploading file' });

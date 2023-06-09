@@ -34,5 +34,15 @@ function insertSongURL(user, fileName, newURL){
 
 }
 
+function getSongList(user, res){
+  User.findOne({name: user})
+    .then((result)=>{
+      res.json(result);
+    })
+    .catch((err)=>{
+      console.log(err);
+    });
+}
+
 //export default insertSongURL;
-module.exports = {insertSongURL};
+module.exports = {insertSongURL, getSongList};
