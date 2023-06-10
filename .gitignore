@@ -133,3 +133,4 @@ dist
 
 #project based additions
 serviceAccountKey.json
+googleOauthCredentials.json
