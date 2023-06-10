@@ -26,18 +26,6 @@ const App = () => {
       .then(response => {setIsVisible(false); return response.json(); })
       .then(data => { 
         console.log("handleUpload");
-        // setSelectedFile([]);
-        // console.log(data);
-        // const list=[];
-        // for(var i=0;i<data.songList.length;i++){
-        //   list.push({
-        //     key : i,
-        //     name : data.songList[i].name,
-        //     url : data.songList[i].url
-        //   })
-        // }
-        // setSongList(list);
-        // console.log(songList);
         updateSongList();
       })
       .catch(error => { console.error(error); });

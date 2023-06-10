@@ -1,16 +1,9 @@
 const mongoose = require("mongoose");
 mongoose.connect("mongodb+srv://admin-ashish:hotel9ervictor@web-test-projects.bwuoqdk.mongodb.net/todolistDB?retryWrites=true&w=majority", {useNewUrlParser: true, useUnifiedTopology: true});
 
-const songURLSchema = {
-    name: String,
-    url: String
-};
-const SongURL = mongoose.model("SongURL", songURLSchema);
+const SongURL = mongoose.model("SongURL", require('../models/mongodbSchema.js').songURLSchema);
 
-const userSchema = {
-  name: String,
-  songList: [songURLSchema]
-};
+const userSchema = require('../models/mongodbSchema.js').userSchema;
 const User = mongoose.model("User", userSchema);
 
 
@@ -21,7 +14,7 @@ function insertSongURL(user, fileName, newURL){
     url: newURL
   });
 
-  User.findOne({name: user})
+  User.findOne({googleId: user})
     .then((result)=>{
       result.songList.push(songURL);
       result.save()
@@ -35,7 +28,7 @@ function insertSongURL(user, fileName, newURL){
 }
 
 function getSongList(user, res){
-  User.findOne({name: user})
+  User.findOne({googleId: user})
     .then((result)=>{
       res.json(result);
     })
