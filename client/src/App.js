@@ -5,6 +5,7 @@ const App = () => {
   const [selectedFile, setSelectedFile] = useState([]);
   const [isVisible,setIsVisible] = useState(false);
   const [songList, setSongList] = useState([]);
+  const [loginStatus, setLoginStatus] = useState(false);
 
   const baseURL='http://127.0.0.1:5000';
 
@@ -37,8 +38,9 @@ const App = () => {
     const token = searchParams.get('token');
     if(token){
       localStorage.setItem('accessToken', token);
+      setLoginStatus(true);
     }
-    else{
+    else if(!localStorage.getItem('accessToken')){
       localStorage.setItem('accessToken', 'admin');
     }
 
@@ -66,12 +68,31 @@ const App = () => {
     updateSongList();
   }, []);
 
+  function handleLogout(){
+    fetch( baseURL + '/logout', 
+      { headers: { authorization: localStorage.getItem('accessToken') } } ,
+      {
+        method: 'GET'
+      })
+      .then(response => {return response.json(); })
+      .then(data => {
+        localStorage.setItem('accessToken', 'admin');
+        setLoginStatus(false);
+        window.location.replace('http://localhost:3000');
+      })
+      .catch(error => { console.error(error); });
+  }
+
   return (
     <div>
       <p style={{visibility:isVisible? "visible" : "hidden"}}>Uploading</p>
       <input type="file" onChange={handleFileChange} multiple/>
       <button onClick={handleUpload}>Upload</button>
-      <button><a href="http://localhost:5000/login">Login</a></button>
+      {
+        !loginStatus ?
+        <button><a href="http://localhost:5000/login">Login</a></button> :
+        <button onClick={handleLogout}>Logout</button>
+      }
       <SongList list={songList}/>
     </div>
   );

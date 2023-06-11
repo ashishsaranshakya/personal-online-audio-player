@@ -74,7 +74,7 @@ const multerStorage = multer.diskStorage({
 const upload = multer({ storage: multerStorage });
 
 app.get("/user/:username", (req,res)=>{
-  res.redirect("http://localhost:3000/?token=" + req.params.username, {token : req.params.username});
+  res.redirect("http://localhost:3000/?token=" + req.params.username);
 })
 
 app.get("/songs", (req,res)=>{
@@ -118,7 +118,21 @@ app.get("/login", function(req, res){
 
 app.get("/logout", function(req, res){
   req.logout(function(){
-    res.redirect('/user');
+    console.log("Logout");
+    User.findOne({accessToken:req.headers.authorization})
+      .then((result)=>{
+        result.accessToken=null;
+        result.save()
+          .then((result)=>{
+            res.send({done: true});
+          })
+          .catch((err)=>{
+            console.log(err);
+          });
+      })
+      .catch((err)=>{
+        console.log(err);
+      });
   });
 });
 
