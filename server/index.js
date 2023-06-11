@@ -52,10 +52,10 @@ passport.use(new GoogleStrategy({
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
   function(accessToken, refreshToken, profile, cb) {
-    //console.log(profile);
     User.findOrCreate({
       googleId: profile.id,
       name: profile.displayName,
+      accessToken: accessToken,
       songList: []
     }, function (err, user) {
       return cb(err, user);
@@ -73,10 +73,12 @@ const multerStorage = multer.diskStorage({
   });
 const upload = multer({ storage: multerStorage });
 
-const username = 'admin';
-
 app.get("/user/:username", (req,res)=>{
-  mongodbHandler.getSongList(req.params.username, res);
+  res.redirect("http://localhost:3000/?token=" + req.params.username, {token : req.params.username});
+})
+
+app.get("/songs", (req,res)=>{
+  mongodbHandler.getSongList(req.headers.authorization, res);
 })
 
 app.get("/user", (req,res)=>{
@@ -88,7 +90,6 @@ app.get("/user", (req,res)=>{
 })
 
 app.post('/upload', upload.array('file'), (req, res) => {
-    console.log(req.files);
     if (!req.files) {
       res.status(400).json({ error: 'No file uploaded' });
       return;
@@ -96,7 +97,7 @@ app.post('/upload', upload.array('file'), (req, res) => {
     
     //uploading all files asynchronously
     const files=req.files;
-    firebaseFileHandler.uploadFiles(files, res, username);
+    firebaseFileHandler.uploadFiles(files, res, req.headers.authorization);
 });
 
 app.get("/auth/google",
@@ -107,8 +108,7 @@ app.get("/auth/google/user",
   passport.authenticate('google', { failureRedirect: "/login" }),
   function(req, res) {
     // Successful authentication
-    console.log(req.user);
-    res.redirect("/user/" + req.user.googleId);
+    res.redirect("/user/" + req.user.accessToken);
   }
 );
 

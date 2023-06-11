@@ -14,7 +14,7 @@ function insertSongURL(user, fileName, newURL){
     url: newURL
   });
 
-  User.findOne({googleId: user})
+  User.findOne({accessToken: user})
     .then((result)=>{
       result.songList.push(songURL);
       result.save()
@@ -28,13 +28,16 @@ function insertSongURL(user, fileName, newURL){
 }
 
 function getSongList(user, res){
-  User.findOne({googleId: user})
-    .then((result)=>{
-      res.json(result);
-    })
-    .catch((err)=>{
-      console.log(err);
-    });
+  if(user==='admin') res.json({songList:[]});
+  else{
+    User.findOne({accessToken: user})
+      .then((result)=>{
+        res.json(result);
+      })
+      .catch((err)=>{
+        console.log(err);
+      });
+  }
 }
 
 //export default insertSongURL;

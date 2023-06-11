@@ -19,24 +19,34 @@ const App = () => {
     }
     
     setIsVisible(true);
-    fetch( baseURL + '/upload', {
-      method: 'POST',
-      body: formData,
-    })
+    fetch( baseURL + '/upload', 
+      {
+        method: 'POST',
+        body: formData,
+        headers: { authorization: localStorage.getItem('accessToken') }
+      })
       .then(response => {setIsVisible(false); return response.json(); })
       .then(data => { 
-        console.log("handleUpload");
         updateSongList();
       })
       .catch(error => { console.error(error); });
   };
 
   const updateSongList = () => {
-    const user = 'admin';
+    const searchParams = new URLSearchParams(window.location.search);
+    const token = searchParams.get('token');
+    if(token){
+      localStorage.setItem('accessToken', token);
+    }
+    else{
+      localStorage.setItem('accessToken', 'admin');
+    }
 
-    fetch( baseURL + '/' + user, {
-      method: 'GET'
-    })
+    fetch( baseURL + '/songs', 
+      { headers: { authorization: localStorage.getItem('accessToken') } } ,
+      {
+        method: 'GET'
+      })
       .then(response => {return response.json(); })
       .then(data => {
         const list=[];
@@ -48,7 +58,6 @@ const App = () => {
           })
         }
         setSongList(list);
-        console.log("updateSongList");
       })
       .catch(error => { console.error(error); });
   };
@@ -62,6 +71,7 @@ const App = () => {
       <p style={{visibility:isVisible? "visible" : "hidden"}}>Uploading</p>
       <input type="file" onChange={handleFileChange} multiple/>
       <button onClick={handleUpload}>Upload</button>
+      <button><a href="http://localhost:5000/login">Login</a></button>
       <SongList list={songList}/>
     </div>
   );

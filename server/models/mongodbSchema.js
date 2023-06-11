@@ -11,12 +11,11 @@ const songURLSchema = new mongoose.Schema ({
 const userSchema = new mongoose.Schema ({
     googleId: String,
     name: String,
+    accessToken: String,
     songList: [songURLSchema]
 });
 
 userSchema.plugin(passportLocalMongoose);
 userSchema.plugin(findOrCreate);
-
-//const User = mongoose.model("User", userSchema);
 
 module.exports = {songURLSchema, userSchema};

@@ -1,7 +1,6 @@
 import React from 'react';
 
 function SongList(props){
-    console.log("SongList");
     return (
         <div>
             {props.list.map((item,index)=>{
