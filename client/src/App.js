@@ -40,7 +40,7 @@ const App = () => {
       localStorage.setItem('accessToken', token);
       setLoginStatus(true);
     }
-    else if(!localStorage.getItem('accessToken')){
+    else if(localStorage.getItem('accessToken') === null){
       localStorage.setItem('accessToken', 'admin');
     }
 

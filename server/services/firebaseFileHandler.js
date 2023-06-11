@@ -2,7 +2,11 @@ const admin = require('firebase-admin');
 const { Storage } = require('@google-cloud/storage');
 
 const fs = require('fs');
+const mongoose = require("mongoose");
+mongoose.connect("mongodb+srv://admin-ashish:hotel9ervictor@web-test-projects.bwuoqdk.mongodb.net/todolistDB?retryWrites=true&w=majority", {useNewUrlParser: true, useUnifiedTopology: true});
 const mongodbHandler = require('./mongodbHandler.js');
+const userSchema = require('../models/mongodbSchema.js').userSchema;
+const User = mongoose.model("User", userSchema);
 
 // Setting up firebase storage 
 var serviceAccount = require("../serviceAccountKey.json");
@@ -14,7 +18,7 @@ admin.initializeApp(firebaseConfig);
 const storage = admin.storage();
 const bucket=storage.bucket();
 
-let username = null;
+let googleId = null;
 
 //Setting up google cloud to retrive signed backlink to file for reference
 const googleStorage = new Storage({ 
@@ -23,22 +27,35 @@ const googleStorage = new Storage({
 });
 
 async function uploadFiles(files, res, user) {
-    try {
-      username=user;
-      await Promise.all(files.map(uploadFile));
-      console.log('All files uploaded successfully.');
-      res.json({status: 'OK'});
-    } catch (error) {
-      console.error('Error uploading files:', error);
+  //username=user;
+  User.findOne({accessToken:user})
+    .then(result=>{
+      googleId = result.googleId;
+      upload(files, res)
+    })
+    .catch(err=>{
+      console.error('Error uploading files:', err);
       res.status(500).json({ error: 'Error uploading file' });
-    }
+    });
+}
+
+async function upload(files, res){
+  try{
+    await Promise.all(files.map(uploadFile));
+    console.log('All files uploaded successfully.');
+    res.json({status: 'OK'});
   }
+  catch (error) {
+    console.error('Error uploading files:', error);
+    res.status(500).json({ error: 'Error uploading file' });
+  }
+}
 
 function uploadFile(file) {
     return new Promise((resolve, reject) => {
 
       const filePath = `uploads/${file.filename}`;
-      const destinationPath = username + `/${file.originalname}`;
+      const destinationPath = googleId + `/${file.originalname}`;
       bucket.upload(filePath, {
       destination: destinationPath,
       metadata: {
@@ -58,7 +75,7 @@ function uploadFile(file) {
       .then((results=>{
         const url = results[0];
         console.log('File uploaded and available at:', url);
-        mongodbHandler.insertSongURL(username, file.filename, url);
+        mongodbHandler.insertSongURL(googleId, file.filename, url);
         resolve(url);
       }))
       .catch(error => {

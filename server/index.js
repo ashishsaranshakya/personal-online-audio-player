@@ -52,14 +52,25 @@ passport.use(new GoogleStrategy({
     userProfileURL: "https://www.googleapis.com/oauth2/v3/userinfo"
   },
   function(accessToken, refreshToken, profile, cb) {
-    User.findOrCreate({
-      googleId: profile.id,
-      name: profile.displayName,
-      accessToken: accessToken,
-      songList: []
-    }, function (err, user) {
-      return cb(err, user);
-    });
+    User.findOne({googleId: profile.id})
+      .then(result=>{
+        result.accessToken=accessToken;
+        result.save();
+        return cb(null, result)
+      })
+      .catch((error)=>{
+        const newUser = new User({
+          googleId: profile.id,
+          name: profile.displayName,
+          accessToken: accessToken,
+          songList: []
+        });
+        
+        // Save the document to the database
+        newUser.save()
+          .then(res=>cb(null, res))
+          .catch(err=>cb(err, null))
+      });
   }
 ));
 

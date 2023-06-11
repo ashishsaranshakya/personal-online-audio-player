@@ -14,12 +14,12 @@ function insertSongURL(user, fileName, newURL){
     url: newURL
   });
 
-  User.findOne({accessToken: user})
+  User.findOne({googleId: user})
     .then((result)=>{
       result.songList.push(songURL);
       result.save()
-      .then(result => console.log(result))
-      .catch(err => console.log(err));
+        .then(result => console.log(result))
+        .catch(err => console.log(err));
     })
     .catch((err)=>{
       console.log(err);
