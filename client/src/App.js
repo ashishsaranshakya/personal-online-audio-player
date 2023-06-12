@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import SongList from './components/songList';
+import './App.css';
 
 const App = () => {
   const [selectedFile, setSelectedFile] = useState([]);
@@ -86,8 +87,8 @@ const App = () => {
   return (
     <div>
       <p style={{visibility:isVisible? "visible" : "hidden"}}>Uploading</p>
-      <input type="file" onChange={handleFileChange} multiple/>
-      <button onClick={handleUpload}>Upload</button>
+      <label className="file-input"><input type="file" onChange={handleFileChange} multiple/></label>
+      <button className="login-button" onClick={handleUpload}>Upload</button>
       {
         !loginStatus ?
         <button><a href="http://localhost:5000/login">Login</a></button> :
